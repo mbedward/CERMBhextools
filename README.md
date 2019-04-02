@@ -4,6 +4,19 @@ This R package povides functions to make it easy to construct hexagonal lattices
 
 The package is written for use by the Centre for Environmental Risk Management of Bushfires. You may use it for any purpose but... **Beware! It is very new and clunky and features will probably change without notice.**
 
+## Install the package
+
+```
+# Install (or update) devtools
+install.packages("devtools")
+
+# Install the package. The somewhat cryptic build arguments seem to be required
+# for the introductory package vignette to be installed along with the package.
+#
+remotes::install_github("mbedward/CERMBhextools", 
+                        build = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
+```
+
 ## Creating a lattice
 
 ```

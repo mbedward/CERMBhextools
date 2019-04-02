@@ -10,6 +10,6 @@
 #' @export
 #'
 plot.hexlattice <- function(h) {
-  ggplot(data = h$edges) +
+  ggplot(data = h$shapes) +
     geom_sf(colour = "black", fill = NA)
 }

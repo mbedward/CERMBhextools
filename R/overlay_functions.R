@@ -16,18 +16,30 @@
 #'   (\code{sf} object) or a two-column matrix or data frame of point
 #'   coordinates.
 #'
-#' @return A two-column data frame with integer hexagon ID (\code{'id'}) and
-#'   count of points (\code{'npoints'}).
+#' @param output One of 'shapes', 'simple' or 'clone' (may be abbreviated). If
+#'   'shapes' (the default), a spatial data frame is returned that is a copy of
+#'   that in the input \code{hexlattice} object with an 'npoints' column added.
+#'   If 'simple', a plain data frame is returned with columns for hexagon ID
+#'   (integer) and number of points. If 'clone' a copy of the input
+#'   \code{hexlattice} object is returned, with an 'npoints' column added to its
+#'   'shapes' data frame.
 #'
-#' @importFrom dplyr %>%
+#' @return Depending on the 'output' argument: either a spatial data frame
+#'   (output = 'shapes'), a plain data frame of hexagon IDs and point counts
+#'   (output = 'simple'), or a copy of the input \code{hexlattice} object with
+#'   point counts added to its 'shapes' spatial data frame.
+#'
+#' @importFrom dplyr %>% group_by left_join mutate summarize ungroup
 #' @importFrom sf st_bbox st_coordinates st_crs
 #'
 #' @export
 #'
-count_points <- function(h, pts) {
+count_points <- function(h, pts, output = c("shapes", "simple", "clone")) {
   if (!inherits(h, "hexlattice")) {
     stop("Argument h should be an object of class 'hexlattice' ")
   }
+
+  output <- match.arg(output)
 
   if (inherits(pts, "sf")) {
     hproj <- st_crs(h$edges)
@@ -43,22 +55,31 @@ count_points <- function(h, pts) {
     pts <- as.matrix(pts[, 1:2])
   }
 
-  xdim <- h$xbnds[2] - h$xbnds[1]
-  ydim <- h$ybnds[2] - h$ybnds[1]
-
-  binned <- hexbin::hexbin(pts,
-                           xbins = xdim / h$hwidth,
-                           shape = ydim / xdim,
-                           xbnds = h$xbnds,
-                           ybnds = h$ybnds)
-
-  binned <- data.frame(id = binned@cell, npoints = binned@count)
-
-  out <- h$edges %>%
+  dat <- xy2hex(pts, h) %>%
     as.data.frame() %>%
-    dplyr::select(id) %>%
-    dplyr::left_join(binned, by = "id") %>%
-    dplyr::mutate(npoints = ifelse(is.na(npoints), 0, npoints))
+    group_by(q, r) %>%
+    summarize(npoints = n()) %>%
+    ungroup()
 
-  out
+  if (output == "simple") {
+    out <- h$shapes %>%
+      as.data.frame() %>%
+      dplyr::select(id, q, r) %>%
+      left_join(dat, by = c("q", "r")) %>%
+      dplyr::select(id, npoints) %>%
+      mutate(npoints = ifelse(is.na(npoints), 0, npoints))
+
+  } else { # shapes or clone
+    out <- h$shapes
+    if ("npoints" %in% colnames(out)) out$npoints <- NULL
+    out <- left_join(out, dat, by = c("q", "r")) %>%
+      mutate(npoints = ifelse(is.na(npoints), 0, npoints))
+  }
+
+  if (output == "clone") {
+    h$shapes <- out
+    h
+  } else {
+    out
+  }
 }

@@ -9,11 +9,20 @@
 #'   Y ordinates of the bounding rectangle.
 #'
 #' @return A list (class \code{hexlattice}) with the following elements:
-#'   \code{hwidth} - hexagon width (X dimension);
-#'   \code{centroids} - a two-column matrix of hexagon centroids;
-#'   \code{edges} - a spatial data frame of hexagon boundaries;
-#'   \code{xbnds} - X bounds;
-#'   \code{ybnds} - Y bounds;
+#'   \describe{
+#'     \item{width}{Hexagon width (X dimension).}
+#'     \item{side}{Hexagon side length.}
+#'     \item{area}{Hexagon area.}
+#'     \item{xbnds}{X bounds specified when creating the lattice.}
+#'     \item{ybnds}{Y bounds specified when creating the lattice.}
+#'     \item{shapes}{A spatial data frame (class \code{sf}) with hexagon
+#'     edges as the geometry column, and columns for id (integer: 1-N
+#'     starting at lower left and proceeding row-wise), centroid X (xc),
+#'     centroid Y (yc), hexagon lattice column (q), hexagon lattice row
+#'     (r).}
+#'   }
+#'
+#' @importFrom dplyr %>% mutate
 #'
 #' @export
 #'
@@ -22,14 +31,28 @@ make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
 
   if (!quiet) cat("Creating lattice of", nrow(centroids), "hexagons\n")
 
-  h <- .make_hexagons_from_centroids(centroids, w)
+  shapes <- .make_hexagons_from_centroids(centroids, w)
+
+  sidelen <- hex_width2side(w)
+
+  qr <- .do_xy2hex(xy = centroids,
+                   origin = c(xbnds[1], ybnds[1]),
+                   sidelen = sidelen)
+
+  shapes <- shapes %>%
+    mutate(xc = centroids[, "x"],
+           yc = centroids[, "y"],
+           q = qr[, "q"],
+           r = qr[, "r"])
 
   lattice <- list(
-    hwidth = w,
-    centroids = centroids,
-    edges = h,
+    side = sidelen,
+    width = w,
+    area = hex_width2area(w),
     xbnds = xbnds,
-    ybnds = ybnds
+    ybnds = ybnds,
+
+    shapes = shapes
   )
 
   class(lattice) <- c("hexlattice", "list")

@@ -1,0 +1,182 @@
+---
+title: "CERMBhextools package examples"
+output: 
+  pdf_document: 
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(CERMBhextools)
+library(dplyr)
+library(ggplot2)
+library(sf)
+
+theme_set( theme_bw() )
+
+set.seed(42)
+
+```
+
+The [CERMBhextools](https://github.com/mbedward/CERMhextools) package provides functions to create hexagonal lattices, save these to file as vector layers (via the 'sf' package), and count points within hexagons.
+
+## Constructing a lattice
+
+A lattice is created by specifying a bounding rectangle and a value for hexagon width. Hexagons are arranged in 'pointy-up' formation (as opposed to 'flat-up') so width is the horizontal distance between the two vertical sides.
+
+```{r cars}
+
+# Bounding coordinates
+xbnds <- c(700000, 720000)
+ybnds <- c(6500000, 6530000)
+
+# Create a lattice of 1 sq km hexagons over this area
+width <- hex_area2width(1000000)
+cat("Hexagon width is", round(width, 2), "metres\n")
+
+H <- make_hexagons(width, xbnds, ybnds)
+
+```
+
+The object H is a list of class 'hexlattice':
+
+```{r}
+class(H)
+```
+
+It contains the following elements:
+
+```{r}
+lapply(H, class)
+```
+
+The `shapes` element is a spatial data frame with hexagon edges as the geometry:
+
+```{r}
+head(H$shapes)
+```
+
+Note that the bounding box of the hexagons will be slightly larger than the original bounding box specified for the centroids.
+
+We can do a quick plot of the lattice:
+
+```{r}
+plot(H)
+```
+
+## Counting points within hexagons
+
+Because the lattice edges are stored as a spatial data frame you can use functions in the `sf` package to do overlays. However, to count points within hexagons the `CERMBhextools::count_points` function will be much faster because it uses efficient cartesian to hexagonal coordinate conversion rather than point-in-polygon routines. See [this article](https://www.redblobgames.com/grids/hexagons/#pixel-to-hex) for a description of the algorithm used.
+
+
+Here we create some random point data to demonstrate the procedure:
+
+```{r}
+
+N <- 2000
+
+pts <- cbind(x = runif(N, xbnds[1], xbnds[2]),
+             y = runif(N, ybnds[1], ybnds[2]))
+
+plot(H) +
+  geom_point(data = as.data.frame(pts), aes(x, y), 
+             size = 1, colour = "darkred")
+
+```
+
+
+Next we count the points within each hexagon. The 'count_points' function has three output options:
+
+  * 'shapes' (default): return a spatial data frame, being a copy of that in the input hexlattice object with an added column 'npoints'
+  
+  * 'simple': return a plain data frame of hexagon IDs and point counts
+  
+  * 'clone': return a new copy of the input 'hexlattice' object with an 'npoints' column added to the 'shapes' spatial data frame within it.
+
+```{r}
+
+dat <- count_points(H, pts)
+
+head(dat)
+
+```
+
+```{r}
+
+ggplot(data = dat) +
+  geom_sf(aes(fill = npoints)) +
+  
+  scale_fill_distiller(direction = 1) +
+  
+  geom_point(data = as.data.frame(pts), aes(x, y), 
+             size = 1, colour = "darkred")
+
+```
+
+## Saving results to file
+
+Use the `st_write` function from the `sf` package to save the hexagons and point counts to an ESRI shapefile.
+
+```{r}
+
+# Write to shapefile (the delete_layer argument specifies that if there is an 
+# existing file of this name it will be overwritten)
+#
+sf::st_write(dat, "hexagon_counts.shp", delete_layer = TRUE)
+
+```
+
+
+## Timing test for a larger data set
+
+This test runs with a larger number of hexagons and points to assess the execution time of the overlay algorithm.
+
+```{r}
+
+# A lattice of 1 hectare hexagons
+width2 <- hex_area2width(10000)
+cat("Hexagon width is", round(width2, 2), "metres\n")
+
+H2 <- make_hexagons(width2, xbnds, ybnds)
+
+# 10 million random point locations
+N2 <- 1e7
+pts2 <- cbind(x = runif(N2, xbnds[1], xbnds[2]),
+              y = runif(N2, ybnds[1], ybnds[2]))
+
+# record the time taken to count points in hexagons
+cat("\nMeasuring run time in seconds:\n")
+system.time(
+  dat2 <- count_points(H2, pts2)
+)
+
+ggplot(data = dat2) +
+  geom_histogram(aes(x = npoints),
+                 binwidth = 10,
+                 colour = "black", fill = "grey80") +
+  
+  labs(title = "Distribution of point count per hexagon",
+       x = "Number of points",
+       y = "Frequency")
+
+```
+
+Plotting all hexagons (> 60000) with ggplot would be time-consuming, but as an example we will display the centroids of those containing 200 or more points. Point locations were uniformly random so there will be no particular pattern to these hexagon locations, it is just an example of querying results.
+
+```{r}
+
+dat.gg <- dat2 %>%
+  dplyr::filter(npoints >= 200)
+
+ggplot(data = dat.gg) +
+  geom_point(aes(x = xc, y = yc)) +
+  
+  coord_equal() +
+  
+  labs(title = "Locations of hexagons with 200 or more points",
+       x = "X", y = "Y")
+  
+
+```
+

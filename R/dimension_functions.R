@@ -86,7 +86,7 @@ hex_height2side <- function(h) {
 #' @export
 #'
 hex_area2side <- function(A) {
-  sqrt( 2*A / X3ROOT3 )
+  sqrt( 2*A / ROOT3X3 )
 }
 
 
@@ -103,7 +103,7 @@ hex_area2side <- function(A) {
 #' @export
 #'
 hex_side2area <- function(s) {
-  X3ROOT3 * s*s / 2
+  ROOT3X3 * s*s / 2
 }
 
 

@@ -4,7 +4,7 @@
 \alias{count_points}
 \title{Count points within each hexagon in a lattice}
 \usage{
-count_points(h, pts)
+count_points(h, pts, output = c("shapes", "simple", "clone"))
 }
 \arguments{
 \item{h}{Lattice of hexagons; an object of class \code{hexlattice}
@@ -13,10 +13,20 @@ as produced by \code{\link{make_hexagons}}.}
 \item{pts}{Point locations. This can either be a spatial data frame
 (\code{sf} object) or a two-column matrix or data frame of point
 coordinates.}
+
+\item{output}{One of 'shapes', 'simple' or 'clone' (may be abbreviated). If
+'shapes' (the default), a spatial data frame is returned that is a copy of
+that in the input \code{hexlattice} object with an 'npoints' column added.
+If 'simple', a plain data frame is returned with columns for hexagon ID
+(integer) and number of points. If 'clone' a copy of the input
+\code{hexlattice} object is returned, with an 'npoints' column added to its
+'shapes' data frame.}
 }
 \value{
-A two-column data frame with integer hexagon ID (\code{'id'}) and
-  count of points (\code{'npoints'}).
+Depending on the 'output' argument: either a spatial data frame
+  (output = 'shapes'), a plain data frame of hexagon IDs and point counts
+  (output = 'simple'), or a copy of the input \code{hexlattice} object with
+  point counts added to its 'shapes' spatial data frame.
 }
 \description{
 Given a lattice of hexagons and a set of points, this function counts how

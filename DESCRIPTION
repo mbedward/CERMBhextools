@@ -17,3 +17,7 @@ Depends: R (>= 3.5.0)
 Imports: dplyr,
   ggplot2 (>= 3.0.0),
   sf
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

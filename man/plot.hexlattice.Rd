@@ -4,15 +4,28 @@
 \alias{plot.hexlattice}
 \title{Quick plot of hexagon edges using ggplot}
 \usage{
-\method{plot}{hexlattice}(h)
+\method{plot}{hexlattice}(h, xbnds = NULL, ybnds = NULL)
 }
 \arguments{
 \item{h}{Lattice of hexagons; an object of class \code{hexlattice}
 as produced by \code{\link{make_hexagons}}.}
+
+\item{xbnds}{A vector of the minimum and maximum X ordinates of
+hexagons to include. The range is applied to hexagon centroids.
+If \code{NULL} (default) the full X range is included in the plot.}
+
+\item{ybnds}{A vector of the minimum and maximum Y ordinates of
+hexagons to include. The range is applied to hexagon centroids.
+If \code{NULL} (default) the full Y range is included in the plot.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Quick plot of hexagon edges using ggplot
+This is simply a short cut for using ggplot to draw the geometries in the
+\code{shapes} element (an \code{sf} spatial data frame) of a
+\code{hexlattice} object. If the lattice is very large it will be slow to
+draw and the hexagons too small to see properly. In such cases you can use
+the \code{xbnds} and \code{ybnds} arguments to draw just a portion of the
+lattice.
 }

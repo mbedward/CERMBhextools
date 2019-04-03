@@ -2,7 +2,7 @@
 
 This R package povides functions to make it easy to construct hexagonal lattices with the 'sf' package and do fast counts of points within hexagons. It is similar to the 'hexbin' package used with scatter plots, but (hopefully) more convenient when working with spatial data.
 
-The package is written for use by the Centre for Environmental Risk Management of Bushfires. You may use it for any purpose but... **Beware! It is very new and clunky and features will probably change without notice.**
+The package is primarily intended for use by the Centre for Environmental Risk Management of Bushfires, University of Wollongong, Australia. You may use it freely for any purpose but... **Beware! It is very new and clunky and features will probably change without notice.**
 
 ## Install the package
 

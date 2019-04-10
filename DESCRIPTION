@@ -1,8 +1,8 @@
 Package: CERMBhextools
 Type: Package
 Title: Useful hexagonal things
-Version: 0.0.3
-Date: 2019-04-03
+Version: 0.0.3.1
+Date: 2019-04-11
 Authors@R: c(
   person("Michael", "Bedward", role = c("aut", "cre"), email = "michael.bedward@gmail.com"),
   person("Meaghan", "Jenkins", role = "aut", email = "mjenkins@uow.edu.au")

@@ -8,6 +8,16 @@
 #' @param ybnds Vector of two values for the minimum (bottom) and maximum (top)
 #'   Y ordinates of the bounding rectangle.
 #'
+#' @param lazy If TRUE, hexagon geometries (\code{sf} polygons) are not
+#'   created immediately to save time and space. The lattice data frame
+#'   (element 'shapes' in the returned \code{hexlattice} object) will just
+#'   contain hexagon IDs, centroid (X,Y) coordinates and axial (Q-R)
+#'   coordinates. If FALSE, geometries will be created for the returned
+#'   lattice.
+#'
+#' @param quiet If TRUE, suppress console ouput about the details of the
+#'   lattice being created.
+#'
 #' @return A list (class \code{hexlattice}) with the following elements:
 #'   \describe{
 #'     \item{width}{Hexagon width (X dimension).}
@@ -26,12 +36,10 @@
 #'
 #' @export
 #'
-make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
+make_hexagons <- function(w, xbnds, ybnds, lazy = TRUE, quiet = FALSE) {
   centroids <- make_centroids(w, xbnds, ybnds)
 
   if (!quiet) cat("Creating lattice of", nrow(centroids), "hexagons\n")
-
-  shapes <- .make_hexagons_from_centroids(centroids, w)
 
   sidelen <- hex_width2side(w)
 
@@ -39,11 +47,18 @@ make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
                    origin = c(xbnds[1], ybnds[1]),
                    sidelen = sidelen)
 
-  shapes <- shapes %>%
-    mutate(xc = centroids[, "x"],
-           yc = centroids[, "y"],
-           q = qr[, "q"],
-           r = qr[, "r"])
+  shapes <- data.frame(
+    id = 1:nrow(centroids),
+    xc = centroids[, "x"],
+    yc = centroids[, "y"],
+    q = qr[, "q"],
+    r = qr[, "r"]
+  )
+
+  if (!lazy) {
+    geometry <- .make_hexagons_from_centroids(centroids, w)
+    shapes <- sf::st_sf(shapes, geometry)
+  }
 
   lattice <- list(
     side = sidelen,
@@ -51,6 +66,8 @@ make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
     area = hex_width2area(w),
     xbnds = xbnds,
     ybnds = ybnds,
+
+    has.geometry = !lazy,
 
     shapes = shapes
   )
@@ -61,7 +78,7 @@ make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
 }
 
 
-# Make a lattice of hexagons given a valid grid of centroids
+# Make a list (sf::st_sfc) of hexagon geometries given a valid grid of centroids
 #
 # Adapted from code by Tim Keitt posted at:
 # https://stat.ethz.ch/pipermail/r-sig-geo/2007-March/001791.html
@@ -105,7 +122,7 @@ make_hexagons <- function(w, xbnds, ybnds, quiet = FALSE) {
     sf::st_polygon(list(cbind(x, y)))
   })
 
-  sf::st_sf(id = 1:length(polys), geometry = sf::st_sfc(polys))
+  sf::st_sfc(polys)
 }
 
 

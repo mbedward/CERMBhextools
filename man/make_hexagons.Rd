@@ -4,7 +4,7 @@
 \alias{make_hexagons}
 \title{Create a lattice of hexagons}
 \usage{
-make_hexagons(w, xbnds, ybnds, quiet = FALSE)
+make_hexagons(w, xbnds, ybnds, lazy = TRUE, quiet = FALSE)
 }
 \arguments{
 \item{w}{Hexagon width.}
@@ -14,6 +14,16 @@ X ordinates of the bounding rectangle.}
 
 \item{ybnds}{Vector of two values for the minimum (bottom) and maximum (top)
 Y ordinates of the bounding rectangle.}
+
+\item{lazy}{If TRUE, hexagon geometries (\code{sf} polygons) are not
+created immediately to save time and space. The lattice data frame
+(element 'shapes' in the returned \code{hexlattice} object) will just
+contain hexagon IDs, centroid (X,Y) coordinates and axial (Q-R)
+coordinates. If FALSE, geometries will be created for the returned
+lattice.}
+
+\item{quiet}{If TRUE, suppress console ouput about the details of the
+lattice being created.}
 }
 \value{
 A list (class \code{hexlattice}) with the following elements:

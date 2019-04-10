@@ -3,6 +3,8 @@
 S3method(plot,hexlattice)
 S3method(summary,hexlattice)
 export(count_points)
+export(create_geometries)
+export(has_geometries)
 export(hex2xy)
 export(hex_area2side)
 export(hex_area2width)

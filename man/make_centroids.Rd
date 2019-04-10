@@ -25,6 +25,6 @@ https://stat.ethz.ch/pipermail/r-sig-geo/2007-March/001791.html
 \examples{
 # Create 1 square kilometre hexagons over a given area
 width <- hex_area2width(1000000)
-hexagons <- make_hexagons(width, xbnds = c(700000, 750000), ybnds = c(6500000, 6600000))
+centroids <- make_hexagons(width, xbnds = c(700000, 750000), ybnds = c(6500000, 6600000))
 
 }

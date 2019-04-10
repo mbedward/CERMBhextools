@@ -27,5 +27,6 @@ This is simply a short cut for using ggplot to draw the geometries in the
 \code{hexlattice} object. If the lattice is very large it will be slow to
 draw and the hexagons too small to see properly. In such cases you can use
 the \code{xbnds} and \code{ybnds} arguments to draw just a portion of the
-lattice.
+lattice. If the lattice does not yet have geometries a warning message
+is issued and the function invisibly returns NULL.
 }

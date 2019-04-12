@@ -1,4 +1,4 @@
-# CERMBhextools
+# sfhextools
 
 This R package povides functions to make it easy to construct hexagonal lattices with the 'sf' package and do fast counts of points within hexagons. It is similar to the 'hexbin' package used with scatter plots, but (hopefully) more convenient when working with spatial data.
 
@@ -13,14 +13,14 @@ install.packages("devtools")
 # Install the package. The somewhat cryptic build arguments seem to be required
 # for the introductory package vignette to be installed along with the package.
 #
-remotes::install_github("mbedward/CERMBhextools", 
+remotes::install_github("mbedward/sfhextools", 
                         build = TRUE, build_opts = c("--no-resave-data", "--no-manual"))
 ```
 
 ## Creating a lattice
 
 ```
-library(CERMBhextools)
+library(sfhextools)
 library(sf)
 
 theme_set( theme_bw() )

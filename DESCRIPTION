@@ -1,4 +1,4 @@
-Package: CERMBhextools
+Package: sfhextools
 Type: Package
 Title: Useful hexagonal things
 Version: 0.0.4

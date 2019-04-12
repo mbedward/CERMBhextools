@@ -114,6 +114,22 @@ make_centroids <- function(w, xbnds, ybnds) {
 }
 
 
+#' Check if a hexlattice object has geometries
+#'
+#' @param h Lattice of hexagons; an object of class \code{hexlattice}
+#'   as produced by \code{\link{make_hexagons}}.
+#'
+#' @return TRUE if geometries are present, FALSE otherwise.
+#'
+#' @export
+#'
+has_geometries <- function(h) {
+  stopifnot(inherits(h, "hexlattice"))
+
+  inherits(h$shapes, "sf")
+}
+
+
 #' Add geometries to a hexagonal lattice
 #'
 #' This function checks if the lattice already has geometries and, if not,
@@ -136,7 +152,33 @@ create_geometries <- function(h, force = FALSE) {
   } else {
     geoms <- .make_hexagons_from_centroids(h$shapes[, c("xc", "yc")], h$width)
 
-    h$shapes <- sf::st_sf(shapes, geometry = sf::st_sfc(geoms))
+    h$shapes <- sf::st_sf(h$shapes, geometry = sf::st_sfc(geoms))
+  }
+
+  h
+}
+
+
+#' Remove geometries from a hexagonal lattice
+#'
+#' This function checks if the given \code{hexlattice} object has geometries
+#' and, if so, removes them. They can be restored later using
+#' \code{\link{create_geometries}}.
+#'
+#' @param h Lattice of hexagons; an object of class \code{hexlattice}
+#'   as produced by \code{\link{make_hexagons}}.
+#'
+#' @return A copy of the input lattice with geometries removed.
+#'
+#' @export
+#'
+remove_geometries <- function(h) {
+  if (!has_geometries(h)) {
+    message("Lattice does not have geometries")
+
+  } else {
+    h$shapes <- as.data.frame(h$shapes)
+    h$shapes$geometry <- NULL
   }
 
   h

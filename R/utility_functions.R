@@ -1,3 +1,21 @@
+#' Return the lattice data frame
+#'
+#' This is the preferred way of accessing the data frame of a \code{hexlattice}
+#' object.
+#'
+#' @param h Lattice of hexagons; an object of class \code{hexlattice}
+#'   as produced by \code{\link{make_hexagons}}.
+#'
+#' @return A data frame. If the lattice has geometries this will be an
+#'   \code{sf} data frame.
+#'
+#' @export
+#'
+shapes <- function(h) {
+  h$shapes
+}
+
+
 #' Quick plot of hexagon edges using ggplot
 #'
 #' This is simply a short cut for using ggplot to draw the geometries in the
@@ -90,17 +108,55 @@ summary.hexlattice <- function(h) {
 }
 
 
-#' Check if a hexlattice object has geometries
+#' Return the first rows of a hexlattice data frame
 #'
-#' @param h Lattice of hexagons; an object of class \code{hexlattice}
-#'   as produced by \code{\link{make_hexagons}}.
+#' @param x A \code{hexlattice} object.
 #'
-#' @return TRUE if geometries are present, FALSE otherwise.
+#' @param n Number of rows to return or, if negative, the number of
+#'   trailing rows to omit.
+#'
+#' @param geometry If TRUE, include the geometry column if present. If FALSE
+#'   (default) omit the geometry column.
+#'
+#' @param ... Arguments to be passed to other methods (presently unused).
+#'
+#' @return A data frame. If the lattice has geometries this will be an
+#'   \code{sf} data frame.
 #'
 #' @export
 #'
-has_geometries <- function(h) {
-  stopifnot(inherits(h, "hexlattice"))
+head.hexlattice <- function(x, n = 6L, geometry = FALSE, ...) {
+  stopifnot(inherits(x, "hexlattice"))
 
-  inherits(h$shapes, "sf")
+  if (has_geometries(x) && !geometry)
+    head(remove_geometries(x)$shapes, n, ...)
+  else
+    head(x$shapes, n, ...)
+}
+
+
+#' Return the last rows of a hexlattice data frame
+#'
+#' @param x A \code{hexlattice} object.
+#'
+#' @param n Number of rows to return or, if negative, the number of
+#'   initial rows to omit.
+#'
+#' @param geometry If TRUE, include the geometry column if present. If FALSE
+#'   (default) omit the geometry column.
+#'
+#' @param ... Arguments to be passed to other methods (presently unused).
+#'
+#' @return A data frame. If the lattice has geometries this will be an
+#'   \code{sf} data frame.
+#'
+#' @export
+#'
+tail.hexlattice <- function(x, n = 6L, geometry = FALSE, ...) {
+  stopifnot(inherits(x, "hexlattice"))
+
+  if (has_geometries(x) && !geometry)
+    tail(remove_geometries(x)$shapes, n, ...)
+  else
+    tail(x$shapes, n, ...)
 }

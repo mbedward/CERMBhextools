@@ -16,70 +16,60 @@
 #'   (\code{sf} object) or a two-column matrix or data frame of point
 #'   coordinates.
 #'
-#' @param output One of 'shapes', 'simple' or 'clone' (may be abbreviated). If
-#'   'shapes' (the default), a spatial data frame is returned that is a copy of
-#'   that in the input \code{hexlattice} object with an 'npoints' column added.
-#'   If 'simple', a plain data frame is returned with columns for hexagon ID
-#'   (integer) and number of points. If 'clone' a copy of the input
-#'   \code{hexlattice} object is returned, with an 'npoints' column added to its
-#'   'shapes' data frame.
+#' @param outcol The name of the column of point counts to add to the
+#'   \code{hexlattice} object's data frame. If there is an existing column in the data
+#'   frame with this name, the name of the new column will be adjusted using
+#'   \code{\link[base]{make.names}}.
 #'
-#' @return Depending on the 'output' argument: either a spatial data frame
-#'   (output = 'shapes'), a plain data frame of hexagon IDs and point counts
-#'   (output = 'simple'), or a copy of the input \code{hexlattice} object with
-#'   point counts added to its 'shapes' spatial data frame.
+#' @return A copy of the input \code{hexlattice} object with point counts added
+#'   to its data frame.
 #'
-#' @importFrom dplyr %>% group_by left_join mutate summarize ungroup
-#' @importFrom sf st_bbox st_coordinates st_crs
+#' @importFrom dplyr %>%
 #'
 #' @export
 #'
-count_points <- function(h, pts, output = c("shapes", "simple", "clone")) {
+count_points <- function(h, pts, outcol = "npoints") {
   if (!inherits(h, "hexlattice")) {
     stop("Argument h should be an object of class 'hexlattice' ")
   }
 
-  output <- match.arg(output)
-
   if (inherits(pts, "sf")) {
-    hproj <- st_crs(h$edges)
-    pproj <- st_crs(pts)
-    na.proj <- (sf:::is.na.crs(hproj) || sf:::is.na.crs(cproj))
+    if (has_geometries(h)) {
+      hproj <- sf::st_crs(h$shapes)
+      pproj <- sf::st_crs(pts)
+      na.proj <- (sf:::is.na.crs(hproj) || sf:::is.na.crs(cproj))
 
-    ok <- na.proj | (hproj == pproj)
-    if (!ok) stop("CRS for points differs from that for hexagons")
+      ok <- na.proj | (hproj == pproj)
+      if (!ok) stop("CRS for points differs from that for hexagons")
+    }
 
-    pts <- as.matrix(st_coordinates(pts)[, 1:2])
+    pts <- as.matrix(sf::st_coordinates(pts)[, 1:2])
 
   } else {
     pts <- as.matrix(pts[, 1:2])
   }
 
+
+  outcol.requested <- outcol
+  n <- ncol(h$shapes)
+  outcol <- make.names(c(colnames(h$shapes), outcol.requested), unique = TRUE)[n+1]
+  if (outcol != outcol.requested) {
+    warning("Adjusted column name to ", outcol)
+  }
+
   dat <- xy2hex(pts, h) %>%
     as.data.frame() %>%
-    group_by(q, r) %>%
-    summarize(npoints = n()) %>%
-    ungroup()
+    dplyr::group_by(q, r) %>%
+    dplyr::summarize(NPOINTS__ = n()) %>%
+    dplyr::ungroup()
 
-  if (output == "simple") {
-    out <- h$shapes %>%
-      as.data.frame() %>%
-      dplyr::select(id, q, r) %>%
-      left_join(dat, by = c("q", "r")) %>%
-      dplyr::select(id, npoints) %>%
-      mutate(npoints = ifelse(is.na(npoints), 0, npoints))
 
-  } else { # shapes or clone
-    out <- h$shapes
-    if ("npoints" %in% colnames(out)) out$npoints <- NULL
-    out <- left_join(out, dat, by = c("q", "r")) %>%
-      mutate(npoints = ifelse(is.na(npoints), 0, npoints))
-  }
+  h$shapes <- h$shapes %>%
+    dplyr::left_join(dat, by = c("q", "r")) %>%
+    dplyr::mutate(NPOINTS__ = ifelse(is.na(NPOINTS__), 0, NPOINTS__))
 
-  if (output == "clone") {
-    h$shapes <- out
-    h
-  } else {
-    out
-  }
+  i <- which(colnames(h$shapes) == "NPOINTS__")
+  colnames(h$shapes)[i] <- outcol
+
+  h
 }

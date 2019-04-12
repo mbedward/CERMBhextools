@@ -56,8 +56,8 @@ make_hexagons <- function(w, xbnds, ybnds, lazy = TRUE, quiet = FALSE) {
   )
 
   if (!lazy) {
-    geometry <- .make_hexagons_from_centroids(centroids, w)
-    shapes <- sf::st_sf(shapes, geometry)
+    geoms <- .make_hexagons_from_centroids(centroids, w)
+    shapes <- sf::st_sf(shapes, geometry = sf::st_sfc(geoms))
   }
 
   lattice <- list(
@@ -66,6 +66,8 @@ make_hexagons <- function(w, xbnds, ybnds, lazy = TRUE, quiet = FALSE) {
     area = hex_width2area(w),
     xbnds = xbnds,
     ybnds = ybnds,
+
+    has.geometry = !lazy,
 
     shapes = shapes
   )

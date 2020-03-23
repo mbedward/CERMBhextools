@@ -1,18 +1,19 @@
 Package: sfhextools
 Type: Package
 Title: Useful hexagonal things
-Version: 0.0.4
-Date: 2019-04-12
+Version: 0.0.5
+Date: 2020-03-24
 Authors@R: c(
   person("Michael", "Bedward", role = c("aut", "cre"), email = "michael.bedward@gmail.com"),
-  person("Meaghan", "Jenkins", role = "aut", email = "mjenkins@uow.edu.au")
+  person("Meaghan", "Jenkins", role = "aut", email = "mjenkins@uow.edu.au"),
+  person("Owen", "Price", role = "aut", email = "oprice@uow.edu.au")
   )
 Description: Some functions to make it easier to construct hexagonal lattices as
   spatial layers (using the sf package) and count points within hexagons.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Depends: R (>= 3.5.0)
 Imports: dplyr,
   ggplot2 (>= 3.0.0),

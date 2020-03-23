@@ -37,7 +37,7 @@ count_points <- function(h, pts, outcol = "npoints") {
     if (has_geometries(h)) {
       hproj <- sf::st_crs(h$shapes)
       pproj <- sf::st_crs(pts)
-      na.proj <- (sf:::is.na.crs(hproj) || sf:::is.na.crs(cproj))
+      na.proj <- (sf:::is.na.crs(hproj) || sf:::is.na.crs(pproj))
 
       ok <- na.proj | (hproj == pproj)
       if (!ok) stop("CRS for points differs from that for hexagons")

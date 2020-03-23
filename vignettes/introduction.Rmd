@@ -1,10 +1,10 @@
 ---
-title: "CERMBhextools package examples"
+title: "sfhextools package examples"
 author: "Michael Bedward"
 date: "2019-04-02"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{CERMBhextools package examples}
+  %\VignetteIndexEntry{sfhextools package examples}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The [CERMBhextools](https://github.com/mbedward/CERMBhextools) package provides functions to create hexagonal lattices, save these to file as vector layers (via the 'sf' package), and count points within hexagons.
+The [sfhextools](https://github.com/mbedward/sfhextools) package provides functions to create hexagonal lattices, save these to file as vector layers (via the 'sf' package), and count points within hexagons.
 
 The package is written for use by the Centre for Environmental Risk Management of Bushfires. You may use it for any purpose but... **Beware! It is very new and clunky and features will probably change without notice.**
 
@@ -24,7 +24,7 @@ First load the required packages for the examples:
 
 ```{r}
 
-library(CERMBhextools)
+library(sfhextools)
 library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 library(sf)
@@ -91,7 +91,7 @@ plot(H)
 
 ## Counting points within hexagons
 
-Because the lattice edges are stored as a spatial data frame you can use functions in the `sf` package to do overlays. However, to count points within hexagons the `CERMBhextools::count_points` function will be much faster because it uses efficient cartesian to hexagonal coordinate conversion rather than point-in-polygon routines. See [this article](https://www.redblobgames.com/grids/hexagons/#pixel-to-hex) for a description of the algorithm used.
+Because the lattice edges are stored as a spatial data frame you can use functions in the `sf` package to do overlays. However, to count points within hexagons the `sfhextools::count_points` function will be much faster because it uses efficient cartesian to hexagonal coordinate conversion rather than point-in-polygon routines. See [this article](https://www.redblobgames.com/grids/hexagons/#pixel-to-hex) for a description of the algorithm used.
 
 
 Here we create some random point data to demonstrate the procedure:

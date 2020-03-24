@@ -73,3 +73,87 @@ count_points <- function(h, pts, outcol = "npoints") {
 
   h
 }
+
+
+#' Sample values from a raster at hexagon centroid locations
+#'
+#' Given a lattice of hexagons and a raster layer, this function samples the
+#' raster value at each hexagon centroid. A check is done that the hexagon
+#' lattice and the raster have the same coordinate reference system. If either
+#' does not have a reference system defined this check is skipped, i.e. point
+#' and hexagon coordinates are assumed to be comparable.
+#'
+#' @param h Lattice of hexagons; an object of class \code{hexlattice}
+#'   as produced by \code{\link{make_hexagons}}.
+#'
+#' @param r A raster object, either a single layer (\code{RasterLayer}) or
+#'   a multi-layer raster (\code{RasterStack}, \code{RasterBrick}).
+#'
+#' @param interp If \code{TRUE} (default), raster values are sampled using
+#'   bilinear interpolation; if \code{FALSE} no interpolation is performed.
+#'
+#' @param outcol The name of the column(s) of raster values to add to the
+#'   \code{hexlattice} object's data frame. For multi-layer rasters, this is the
+#'   root name, and columns will be named \code{outcol1, outcol2, ...}. The
+#'   default (\code{NULL}) means to use raster layer names as column names if
+#'   these are defined, otherwise use the name 'layer'. If any names clash with
+#'   existing columns in the data frame, the name of the new columns will be
+#'   adjusted using \code{\link[base]{make.names}}.
+#'
+#' @return A copy of the input \code{hexlattice} object with raster values added
+#'   to its data frame.
+#'
+#' @importFrom dplyr %>%
+#'
+#' @export
+#'
+sample_raster <- function(h, r, interp = TRUE, outcol = NULL) {
+  if (!inherits(h, "hexlattice")) {
+    stop("Argument h should be an object of class 'hexlattice' ")
+  }
+
+  if (!inherits(r, "Raster")) {
+    stop("Argument r should be a Raster object")
+  }
+
+  if (has_geometries(h)) {
+    hcrs <- sf::st_crs(h)
+    rcrs <- raster::crs(r)
+
+    if (!is.na(hcrs) && !is.na(rcrs)) {
+      ok <- raster::compareCRS(hcrs$proj4string, rcrs)
+      if (!ok) {
+        stop("Lattice and raster appear to have different coordinate reference systems")
+      }
+    }
+  }
+
+  xy <- h$shapes %>%
+    as.data.frame() %>%
+    dplyr::select(xc, yc) %>%
+    as.matrix()
+
+  method <- ifelse(interp, "bilinear", "simple")
+  vals <- raster::extract(r, xy, method)
+
+  layer.names <- names(r)
+  if (!is.matrix(vals)) {
+    # r is a single layer raster
+    vals <- matrix(vals, ncol = 1)
+  }
+
+  if (is.null(outcol)) {
+    colnames(vals) <- names(r)
+  } else {
+    colnames(vals) <- paste0(outcol[1], 1:ncol(vals))
+  }
+
+  n <- ncol(h$shapes)
+  outcols <- make.names(c(colnames(h$shapes), colnames(vals)), unique = TRUE)[-(1:n)]
+  colnames(vals) <- outcols
+
+  h$shapes <- cbind(h$shapes, vals)
+
+  h
+}
+

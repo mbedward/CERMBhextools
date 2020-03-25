@@ -145,7 +145,10 @@ sample_raster <- function(h, r, interp = TRUE, outcol = NULL) {
   if (is.null(outcol)) {
     colnames(vals) <- names(r)
   } else {
-    colnames(vals) <- paste0(outcol[1], 1:ncol(vals))
+    if (ncol(vals) > 1)
+      colnames(vals) <- paste0(outcol[1], 1:ncol(vals))
+    else
+      colnames(vals) <- outcol[1]
   }
 
   n <- ncol(h$shapes)
